@@ -345,7 +345,7 @@ Rune and magic spell damage formulas are based on the **7.6 system**, where the 
 
 === Paladin Adjustments
 
-* **New field spell** — Paladins gain a new spell that conjures a field effect under themselves. The field functions as a trap: when walked over, it creates a 3×3 radius area that damages and paralyzes all affected players (approximately 20–50% of the strength of a standard Druid paralyze).
+* **New field spell** — Paladins gain a new spell that conjures a trap field beneath themselves. When triggered by any player walking over it, the field erupts in a 3×3 radius, dealing damage and applying a short paralysis to all caught within (approximately 20–50% of a standard Druid paralyze). The trap is implemented as a field effect, so it can be neutralized by overwriting it with any field rune.
 
 ---
 
