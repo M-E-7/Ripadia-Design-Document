@@ -1,0 +1,394 @@
+= Ripadia – Open Tibia Server Design Document
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:experimental:
+
+== Technical Stack
+
+=== Server Software
+
+Two candidate distros are under consideration:
+
+* https://github.com/otland/forgottenserver[The Forgotten Server (TFS)] — established, widely used
+* https://github.com/opentibiabr/canary[Canary] — actively maintained, modern codebase
+
+=== Client
+
+* https://github.com/opentibiabr/otclient[OTClient Redemption (mehah)] — recommended client
+
+OTClient Redemption supports custom shaders, is highly customizable, and should support widescreen rendering.
+
+CAUTION: Implementing clientside and serverside widescreen is a known technical hurdle.
+
+=== Map Editor
+
+* https://github.com/opentibiabr/remeres-map-editor[Remeres Map Editor]
+
+---
+
+== Server Overview
+
+Quick-reference summary of all top-level server settings:
+
+* **PvP Mode:** PvP Enforced with modified skull system
+* **Experience Rate:** 1x
+* **Skill Rate:** 0x (replaced by custom skill point system)
+* **Loot Rate:** 1x
+* **PvP Kill Experience:** Yes — 50% of lost XP divided among attackers
+* **Death Penalty:** Extremely low (0.1% experience and skill loss; no item loss ever)
+* **Respawn Rate:** Extremely fast
+* **World Access:** Mainland always available; other continents on daily rotation
+* **Party EXP Sharing:** Limitless members; +20% EXP per active member; relaxed level range
+* **Runes / Ammo / Potions / Amulets / Rings:** Unlimited charges (fueled by Soul points)
+* **Item Loss on Death:** None, under any circumstances (including White/Red/Black skull)
+* **Vocation Stats:** Rebalanced health/mana/skill gain
+* **Exiva:** Limited; tied to skull system
+* **Spell & Rune Formulas:** Based on 7.6 system (level-influenced damage)
+
+---
+
+== PvP System
+
+=== Skull System
+
+Skulls are assigned based on frag count within a rolling time window. A **frag** is defined as killing a non-skulled player.
+
+[cols="1,2,2", options="header"]
+|===
+| Skull | Condition | Duration
+
+| White Skull (WS)
+| 1 frag
+| 5 minutes
+
+| Red Skull (RS)
+| 5 frags within 1 hour
+| 1 hour
+
+| Black Skull (BS)
+| 15 frags within 1 hour
+| 24 hours
+|===
+
+The number of frags any player can accumulate is **unlimited** — there is no frag cap.
+
+=== PZ Lock
+
+[cols="1,1", options="header"]
+|===
+| Action | PZ Lock Duration
+
+| Attacking any player outside of party
+| 1 minute
+
+| Killing any player outside of party
+| 5 minutes
+|===
+
+=== Exiva
+
+Exiva range is tied to the target's skull status:
+
+[cols="1,2", options="header"]
+|===
+| Target Status | Exiva Range
+
+| No skull
+| 1–100 sqm (nearby only)
+
+| White Skull
+| 101–274 sqm
+
+| Red Skull or Black Skull
+| Anywhere (275+ sqm / unlimited)
+
+| Guild member
+| Anywhere (regardless of skull)
+|===
+
+=== PvP Kill Experience
+
+Killing another player grants experience to the attacker(s).
+
+* **Experience gained per kill:** 50% of the total experience the victim loses
+* **Distribution:** Divided equally among all players involved in the kill
+
+---
+
+== Death Penalty & Item Loss
+
+[cols="1,1", options="header"]
+|===
+| Loss Type | Amount
+
+| Experience
+| 0.1% of total experience
+
+| Skill points
+| 0.1% of total skill points
+
+| Items
+| **None — items are never lost under any circumstances**
+|===
+
+NOTE: Item safety applies regardless of skull status. A Black skull player will still never lose items on death.
+
+---
+
+== Experience & Spawn Rate
+
+* **Experience rate:** 1x (standard)
+* **Respawn rate:** Extremely fast — sufficient to claim 1 or 2 small rooms in a regular hunting spot and maintain consistent respawns
+
+---
+
+== Skill System
+
+IMPORTANT: This system is still in design development. The details below represent the current working proposal, not a finalized specification.
+
+=== Design Goals
+
+The standard skilling system (training dummies, mana sitting) has been disabled. Since gold has no meaningful sink or purpose, the design intent is to allow players to convert gold into skill points directly.
+
+The system aims to:
+
+* Retain the social and idle aspects of traditional skilling (player retention, in-game chat, passive activity)
+* Encourage world exploration through finding safe idling spots
+* Create PvP incentive for hunting idle/training players
+
+=== Gold-to-Skill Conversion
+
+The underlying skill point architecture is compatible with direct conversion from a currency.
+
+CAUTION: The primary unresolved math problem is balancing the conversion formula across vocations — magic level and other skills have vastly different backend values and scaling curves.
+
+NOTE: Fishing could remain unchanged, though its purpose in the current design is unclear. Dedicated fishing mechanics may need to be designed.
+
+=== Token / Gold Pouch Mechanic
+
+The gold pouch (coin purse) would be repurposed as a token container:
+
+* While idling/training under the new system, a player passively generates tokens in their gold pouch
+* Token generation rate is proportional to the player's level/experience
+* Upon death, accumulated tokens are **lost and lootable** from the player's corpse
+* Tokens can be converted into skill points via the gold-to-skill system
+
+NOTE: This mechanic partially conflicts with the server's design philosophy (no item/resource loss on death). The current proposal is a working idea — a better solution is still being sought.
+
+---
+
+== Soul System
+
+Traditional charges on runes, ammunition, potions, amulets, and rings are replaced by **Soul points**.
+
+=== Soul Point Regeneration
+
+* Soul points regenerate passively at a rate of **1 Soul per 2 seconds**
+
+=== Resource Soul Costs
+
+==== Runes
+
+[cols="1,1", options="header"]
+|===
+| Rune | Soul Cost
+
+| Sudden Death (SD)
+| 7–10
+
+| Ultimate Healing (UH)
+| 1
+
+| Intense Healing (IH)
+| 1
+
+| Great Fireball (GFB) and comparable area runes
+| 3–4
+
+| Explosion
+| 3–4
+
+| Magic Wall (Mwall)
+| 5–10
+
+| Energy Bomb
+| 5–10
+
+| Fire Bomb
+| 3–5
+
+| Poison Bomb
+| 3–5
+
+| Wall runes
+| 2–3
+
+| Heavy Magic Missile (HMM) & Icicle
+| 1
+
+| Paralyze
+| 15–30 + Mana cost
+
+| Soulfire
+| 15–50
+|===
+
+NOTE: Values shown as ranges are pending final tuning.
+
+NOTE: Explosion may require adjustments to its damage formula or soul cost to stay balanced relative to other area runes.
+
+==== Potions
+
+[cols="1,2,1", options="header"]
+|===
+| Potion | Mana Restored | Soul Cost
+
+| Mana Potion
+| 30–50
+| 1
+
+| Strong Mana Potion
+| 50–70
+| 2
+
+| Great Mana Potion
+| 70–90
+| 3
+
+| Ultimate Mana Potion
+| 90–110
+| 4
+|===
+
+NOTE: Spirit potions and life potions are not available.
+
+==== Amulets & Rings
+
+Amulets and rings automatically de-equip into the player's bag when all charges are expended. They automatically regain full charges when de-equipped.
+
+[cols="1,1", options="header"]
+|===
+| Item | Soul Cost per Charge
+
+| Stone Skin Amulet
+| 3
+
+| Might Ring
+| 1
+
+| Time Ring, Skill Ring, Energy Ring, and other minor rings
+| Free (infinite, no soul cost)
+|===
+
+==== Ammunition
+
+[cols="1,1", options="header"]
+|===
+| Ammo Type | Cost
+
+| Bolt
+| Free
+
+| Arrow
+| Free
+
+| Power Bolt
+| 1 Soul
+
+| Burst Arrow
+| 10–20 Mana or 1 Soul
+
+| Spears, Throwing Stars, and other minor ammo
+| Free (infinite)
+|===
+
+---
+
+== World Access
+
+=== Mainland
+
+Mainland is **always available** and serves as the primary consistent hub.
+
+=== Rotating Continents
+
+All other regions (Ankrahmun, Darashia, Edron, etc.) are available on a **daily rotation**. Each day, one or more continents/islands become accessible, and the previous day's selection closes.
+
+CAUTION: The primary technical hurdle is handling players who are currently located in a region that goes offline. The simplest solution — teleporting everyone to Temple on server save — is undesirable and a better alternative is being sought.
+
+---
+
+== Spells & Formulas
+
+=== Damage Formulas
+
+Rune and magic spell damage formulas are based on the **7.6 system**, where the caster's experience level has a significant influence on damage output.
+
+=== Sorcerer Adjustments
+
+* **Great Energy Beam** — increased damage range, reflecting the effort and positioning required to use it. Reinforces the sorcerer fantasy of launching waves and beams rather than purely relying on SDs.
+* **Ultimate Explosion (UE)** — deals physical damage, same as Sudden Death runes.
+
+=== Druid Adjustments
+
+* Druids **do not** have waves, beams, or Ultimate Explosion.
+* **Heal Friend (Exura Sio)** — reduced exhaust to approximately **700ms** (down from the standard 1000ms healing exhaust), giving druids a meaningful advantage over other vocations in healing scenarios.
+* **Mass Heal** — increased radius.
+
+=== Knight Adjustments
+
+* **Exori (basic)** — reduced mana cost to 80–100 mana, making it a cheap and spammable option.
+* **Exori Gran** — deals 2× the damage of regular Exori but costs 3× the mana.
+* **Charge (Utani Tempo Hur)** — removed. Utani Hur remains the fastest haste spell available to knights.
+
+=== Paladin Adjustments
+
+* **New field spell** — Paladins gain a new spell that conjures a field effect under themselves. The field functions as a trap: when walked over, it creates a 3×3 radius area that damages and paralyzes all affected players (approximately 20–50% of the strength of a standard Druid paralyze).
+
+---
+
+== Party Experience Sharing
+
+Experience sharing is **automatically enabled** for all party members.
+
+=== Bonus Structure
+
+* Each active member in the party grants a **+20% experience bonus** to the entire party, regardless of vocation.
+* Example: a party of 5 active members provides +100% experience (2× base rate).
+* Large hunting groups of 10+ players are viable and encouraged.
+* Players outside the experience sharing range are not eligible to receive shared experience.
+
+=== Level Range
+
+[cols="1,2,2", options="header"]
+|===
+| | Formula | Example (Level 50)
+
+| Vanilla Tibia
+| Lower: `ceil(level / 1.5)` +
+Upper: `floor(level * 1.5)`
+| Level 34–75
+
+| Ripadia
+| Lower: `ceil(level / 2)` +
+Upper: `floor(level * 2)`
+| Level 25–100
+|===
+
+The relaxed range allows higher-level players to assist lower-level friends without breaking the sharing mechanic.
+
+---
+
+== Vocation Rebalancing
+
+=== Knight
+
+* **Attack speed:** Double attack speed (one attack per second)
+
+=== Druid
+
+* **Skill advancement:** Same weapon and shield skill advancement rate as Knight
+* **Health per level:** 7
+* **Mana per level:** 20

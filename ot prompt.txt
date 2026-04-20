@@ -206,7 +206,7 @@ Detailed info:
 		- Double attack speed (once every second)
 
 		Druid:
-		- Same weapon and shield advancement as Knight.
+		- Same weapon and shield skill advancement as Knight.
 		- 7 Health per level
 		- 20 mana per level
 		
