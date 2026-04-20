@@ -201,8 +201,14 @@ Detailed info:
 		Means a level 50 character would be able to share experience with players level 25-100
 
 
+	Rebalanced Vocation stats:
+		Knight:
+		- Double attack speed (once every second)
 
-		
+		Druid:
+		- Same weapon and shield advancement as Knight.
+		- 7 Health per level
+		- 20 mana per level
 		
 		
 		
