@@ -1,0 +1,216 @@
+This is a game design document.
+I will be hosting a Tibia OT (Open Tibia) server, based on either the Canary or TFS (The forgotten server) distros
+
+TFS: https://github.com/otland/forgottenserver
+Canary: https://github.com/opentibiabr/canary
+
+
+The best candidate for the client used will be OTClient Redemption (mehah) 
+
+OTClient: https://github.com/opentibiabr/otclient
+
+Map editor: https://github.com/opentibiabr/remeres-map-editor
+
+OTClient Redemption supports custom shaders, is highly customizable. Should support widescreen
+
+Technical hurdles:
+
+- Implementing clientside and serverside widescreen.
+- 
+
+Server info:
+
+- PvP Enforced with a modified skull system
+- 1x Experience
+- 0x Skill rate (Custom system for gaining skill points)
+- 1x Loot rate
+- Gain experience upon PvP kills
+- Death penalty extremely low (0.1%)
+- Extremely fast respawn rate
+- Limited world access (Mainland would be the main consistent hub, with the other islands/continents being available on a rotation)
+- Limitless party EXP sharing (Infinite number of party members sharing with 20% exp increase for each member, regardless of Vocation)
+- Runes/Ammo/Mana potions/Amulets/Rings with unlimited charges (Will use Soul points to use runes instead)
+- No item loss, under ANY circumstances (including White/Red/Black skull)
+- Rebalanced Vocation stats (Health/Mana/Skill gain)
+- Limited Exiva (Connected to Skull system)
+- Spell and rune formulas based on 7.6 system
+- Minor spell adjustments and rebalancing
+- New spells
+
+
+
+Detailed info:
+
+	PvP Enforced/Hardcore, Skull system, PZ Lock and Exiva:
+	
+		The number of frags (Killing a non-skulled player) any player can do is unlimited.
+
+		Attacking any player outside of party results in 1 minute PZ.
+		Killing any player outside of party results in 5 minute PZ.
+
+		Fragging a player results in a White skull (WS). Expires in 5 minutes.
+		Fragging 5 players in the span of 1 hour results in a Red skull (RS). Expires in 1 hour.
+		Fragging 15 players in the span of 1 hour results in a Black skull (BS). Expires in 24 hours.
+
+		You can Exiva anyone that is nearby you (1 to 100 sqm away).
+		White skull can be Exiva'd far away (101 to 274 sqm away)
+		Red skull and Black skull can be Exiva'd anywhere (275+ sqm away).
+		Guild members can Exiva members of their Guild anywhere.
+
+		PvP kills will grant Experience upon kill.
+		Total value gained by a kill will be 50% of total experience lost, divided by number of players involved in the kill
+		
+		
+	Death penalty & loss:
+		
+		Player loses 0.1% of total Experience upon death.
+		Player loses 0.1% of total Skill points upon death.
+		Player NEVER loses his items upon death.
+
+	Experience & spawn rate:
+		
+		1x Experience rate
+		Extremely fast respawn rate. (Enough to claim 1 or 2 small rooms in a regular hunting spot and have consistent respawns)
+		 
+		
+	Skill system & replacement for skilling/mana sitting (EXPERIMENTAL):
+
+		This system is still in design development.
+
+		Since there is no gold sink (or purpose to gold whatsoever), the idea was to
+		disable the regular skilling system and instead implement a system that would allow you to convert gold into skills.
+
+		The underlying design for skill points is welcoming to this kind of design, so the technical part would not be an issue.
+		Biggest issue is resolving the math/formulas since the difference in skill values on the backend is vastly different when
+		comparing magic level to the other skills.
+
+		Fishing could stay the same, but then again there is no much point to fishing at all. Perhaps need to design some fishing mechanics?
+
+		Skilling/Training and mana sitting is very important for the health of the server, due to somewhat inflating the active player numbers,
+		idling mechanics (which improve player retention) and the social aspect of the server.
+
+		The idea was to create a similar idling mechanic that you could do outside PZ.
+		Finding a good hiding spot is a good mechanic that should be encouraged (promotes world exploration),
+		but I also aim to encourage players finding these idling/training players to kill in order to gain some sort of reward.
+		The social aspect is also a very important piece of this, lots of player just idle while chatting in game-chat.
+
+		This is where the idea of gold pouch comes in.
+		The gold pouch/coin purse is an already existing mechanic, but would be repurposed to hold some sort of tokens (or even just gold?).
+		Idling/training with this new system would generate a certain amount of tokens that would appear in your gold pouch.
+		Upon getting killed, you would lose these tokens and would be lootable in your corpse.
+		You would be able to convert these tokens/coins into skill points using the same gold-to-skill system as mentioned before.
+
+		The amount of tokens generated would most likely be proportional to your level/experience.
+
+		Hoping to find a better solution for this, the current idea is somewhat clashing with the design philosophy.
+
+
+	Runes/Ammo/Manafluids/Amulets/Rings & Soul system:
+
+		Instead of these resources using charges, they will use Soul points.
+		Soul points will passively regenerate at the rate of 1 Soul per 2 seconds.
+		In some cases, where one Soul is too valuable for the charge of 1 resource (such as just one bolt/arrow for example), they player will use Mana instead.
+
+		These are the values we will be using in the first iteration:
+			Resource name: Soul points (Ranges will be used if unsure of value)
+			Runes:
+			- SD: 7-10
+			- UH: 1
+			- IH: 1
+			- GFB: 3-4 (and all area runes comparable to GFB)
+			- Explosion: 3-4 (will need to adjust either Explosion damage formula or Soul cost)
+			- Mwall: 5-10
+			- Energy bomb: 5-10
+			- Fire bomb: 3-5
+			- Poison bomb: 3-5
+			- Wall runes: 2-3
+			- HMM & Icicle: 1
+			- Paralyze: 15-30 + Mana cost
+			- Soulfire: 15-50
+
+			Potions:
+			- Mana potion (30-50): 1
+			- Strong mana potion (50-70): 2
+			- Great mana potion (70-90): 3
+			- Ultimate mana potion (90-110): 4
+			- No spirit or life potions
+		
+			Amulets & Rings:
+			Amulets & Rings will automatically de-equip into your bag after expending all charges.
+			They will automatically regain all charges when de-equipped.
+			The charges will still require soul points.
+			- Stone Skin Amulet: 3 per charge
+			- Might ring: 1 per charge
+			- Time, skill, energy and other rings will be infinite, no soul point usage.
+
+			Ammo:
+			- Bolt: Free
+			- Arrow: Free
+			- Power bolt: 1 Soul
+			- Burst arrow: 10-20 mana or 1 Soul
+			- Other minor ammo types such as spears, throwing stars will be infinite and free.
+
+
+	Limited world access:
+
+		Mainland will always be available.
+		The rest of the world (such as Ankrahmun, Darashia, Edron etc.) will be available on a daily rotation.
+		For example one day Edron is available, next day Ankrahmun & Darashia continent.
+		Biggest technical hurdle is teleporting players back to the mainland if the location they are on is no longer available.
+		Simplest technical solution is teleporting everyone to Temple after server save. Would love to avoid this solution.
+
+	Spells and formulas:
+		Rune and magic formulas would be based on 7.6 system (meaning exp level has a large influence on the damage dealt)
+		Certain spells would be adjusted.
+
+		Sorcerer:
+		- Great energy beam would have an increased damage range due to the skill required. Also feeds into the fantasy of a sorcerer slinging waves and beams left and right instead of just spamming SDs.
+		- Ultimate explosion would be physical, same as SDs.
+
+		Druid:
+		- Druid would not have waves, beams or UE.
+		- Heal friend (Exura Sio) would be on a lower exhaust, somewhere around 700ms (compared to the regular 1000ms healing exhaust). Reason is druids need to have some sort of advantage over another vocation else just spamming UHs.
+		- Mass heal would have a bigger radius.
+
+		Knight:
+		- Knights would have a cheap Exori (80-100 mana)
+		- Exori gran would be x2 stronger, but would cost 3 times the mana compared to regular exori.
+		- No Charge (Utani tempo hur). Utani hur will be the fastest haste spell for knights.
+
+		Paladin:
+		- Paladins will receive a new field spell that they conjure under themselves.
+		- This new spell will function as a trap, triggering when walked over, creating a small 3x3 radius where everyone affected gets damaged and paralyzed (around 20-50% strength of regular Druid paralyze)
+
+
+
+	Limitless party EXP sharing:
+		Experience sharing will be automatically turned on in party.
+		For each active member in the party, you get a 20% exp bonus - regardless of vocation.
+		This would make it possible to create large hunting groups of 10+ people.
+		Any player not in range for experience sharing, will not be eligible for sharing.
+		The level range for experience sharing will be more relaxed
+
+		Regular tibia uses this formula:
+			Lower level limit: ceil(level / 1.5)
+			Upper level limit: floor(level * 1.5)
+
+		We will use:
+			Lower level limit: ceil(level / 2)
+			Upper level limit: floor(level * 2)
+
+		Means a level 50 character would be able to share experience with players level 25-100
+
+
+
+		
+		
+		
+		
+		
+		
+
+
+
+
+
+
